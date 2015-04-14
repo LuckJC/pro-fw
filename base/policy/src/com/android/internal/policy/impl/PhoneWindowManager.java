@@ -900,7 +900,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
 
 			if (mLongPressOnHomeBehavior == LONG_PRESS_HOME_RECENT_SYSTEM_UI) {
-				toggleRecentApps();
+				//toggleRecentApps();
+				Log.d("lixianda","111111");
+				Intent intent = new Intent("com.fjsz.action.MAIN");
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				mContext.startActivity(intent);
 			} else if (mLongPressOnHomeBehavior == LONG_PRESS_HOME_ASSIST) {
 				launchAssistAction();
 			}
@@ -2333,12 +2337,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 					mHomeDoubleTapPending = false;
 					mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
 					handleDoubleTapOnHome();
-				} else if (mLongPressOnHomeBehavior == LONG_PRESS_HOME_RECENT_SYSTEM_UI || mDoubleTapOnHomeBehavior == DOUBLE_TAP_HOME_RECENT_SYSTEM_UI) {
+					Log.d("lixianda","handleDoubleTapOnHome()");
+				}    //add by lixd ---change to code --mLongPressOnHomeBehavior == LONG_PRESS_HOME_RECENT_SYSTEM_UI || mDoubleTapOnHomeBehavior == DOUBLE_TAP_HOME_RECENT_SYSTEM_UI 
+					else if (mDoubleTapOnHomeBehavior == DOUBLE_TAP_HOME_RECENT_SYSTEM_UI) {
 					preloadRecentApps();
-				}
+					Log.d("lixianda","mDoubleTapOnHomeBehavior == DOUBLE_TAP_HOME_RECENT_SYSTEM_UI");
+				}	
 			} else if ((event.getFlags() & KeyEvent.FLAG_LONG_PRESS) != 0) {
 				if (!keyguardOn) {
 					handleLongPressOnHome();
+					Log.d("lixianda","111111");
+					
+					Log.d("lixianda","mContext.startActivity");
 				}
 			}
 			return -1;
