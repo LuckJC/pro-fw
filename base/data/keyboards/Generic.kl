@@ -36,21 +36,21 @@ key 13    EQUALS
 key 14    DEL
 key 15    TAB
 key 16    Q
-key 17    W	WAKE
-key 18    E	WAKE
+key 17    W
+key 18    E
 key 19    R
 key 20    T
 key 21    Y
 key 22    U
 key 23    I
-key 24    O	WAKE
+key 24    O
 key 25    P
 key 26    LEFT_BRACKET
 key 27    RIGHT_BRACKET
 key 28    ENTER
 key 29    CTRL_LEFT
 key 30    A
-key 31    S	WAKE
+key 31    S
 key 32    D
 key 33    F
 key 34    G
@@ -65,11 +65,11 @@ key 42    SHIFT_LEFT
 key 43    BACKSLASH
 key 44    Z
 key 45    X
-key 46    C	WAKE
+key 46    C
 key 47    V
 key 48    B
 key 49    N
-key 50    M	WAKE
+key 50    M
 key 51    COMMA
 key 52    PERIOD
 key 53    SLASH

@@ -112,7 +112,6 @@ import com.android.internal.policy.impl.keyguard.KeyguardServiceDelegate;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.widget.PointerLocationView;
-
 import com.mediatek.common.featureoption.FeatureOption;
 import com.mediatek.common.hdmi.IHDMINative;
 import com.mediatek.common.MediatekClassFactory;
@@ -129,8 +128,10 @@ import static android.view.WindowManager.LayoutParams.*;
 import static android.view.WindowManagerPolicy.WindowManagerFuncs.LID_ABSENT;
 import static android.view.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static android.view.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
+
 import com.mediatek.common.featureoption.FeatureOption;
 import com.mediatek.common.msgmonitorservice.IMessageLogger;
+
 
 /**
  * WindowManagerPolicy implementation for the Android phone UI. This introduces
@@ -2213,7 +2214,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		Intent wakeIntent = new Intent();
 		wakeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-		gestureWakeupAction(keyCode, wakeIntent);
+//		gestureWakeupAction(keyCode, wakeIntent);
 		
 		// / M: Key remapping
 		if (FeatureOption.MTK_HW_KEY_REMAPPING) {
@@ -4241,6 +4242,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		if (audioService == null) {
 			return;
 		}
+		
+		//add by lhj for gesture up and down to change volume
+		if (keycode == KeyEvent.KEYCODE_DPAD_UP) {
+			keycode = KeyEvent.KEYCODE_VOLUME_UP;
+		} else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
+			keycode = KeyEvent.KEYCODE_VOLUME_DOWN;
+		}
+		//add by lhj end
+		
 		try {
 			// when audio is playing locally, we shouldn't have to hold a wake
 			// lock
@@ -4447,7 +4457,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				+ " down =" + down + " canceled = " + canceled + " isWakeKey="
 				+ isWakeKey + " mVolumeDownKeyTriggered ="
 				+ mVolumeDownKeyTriggered + " mVolumeUpKeyTriggered ="
-				+ mVolumeUpKeyTriggered);
+				+ mVolumeUpKeyTriggered
+				+ " mHeadless=" + mHeadless);
 
 		// / M: Key remapping
 		if (FeatureOption.MTK_HW_KEY_REMAPPING) {
@@ -4498,21 +4509,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				return 0;
 			}
 		}
-/*
-		if (down && (policyFlags & WindowManagerPolicy.FLAG_VIRTUAL) != 0
-				&& event.getRepeatCount() == 0) {
-			performHapticFeedbackLw(null, HapticFeedbackConstants.VIRTUAL_KEY,
-					false);
-		}
-*/
-//wwj
+		/*
+		 * if (down && (policyFlags & WindowManagerPolicy.FLAG_VIRTUAL) != 0 &&
+		 * event.getRepeatCount() == 0) { performHapticFeedbackLw(null,
+		 * HapticFeedbackConstants.VIRTUAL_KEY, false); }
+		 */
+		// wwj
 		if (down && (policyFlags & WindowManagerPolicy.FLAG_VIRTUAL) == 0
 				&& event.getRepeatCount() == 0) {
-        	if(keyCode == KeyEvent.KEYCODE_MENU || 
-        			keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_BACK)
-        	{
-			performHapticFeedbackLw(null, HapticFeedbackConstants.VIRTUAL_KEY,
-					false);
+			if (keyCode == KeyEvent.KEYCODE_MENU
+					|| keyCode == KeyEvent.KEYCODE_HOME
+					|| keyCode == KeyEvent.KEYCODE_BACK) {
+				performHapticFeedbackLw(null,
+						HapticFeedbackConstants.VIRTUAL_KEY, false);
 			}
 		}
 
@@ -4548,19 +4557,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				Handler monitorHandler = MessageMonitorLogger
 						.getMsgLoggerHandler();
 				if (monitorHandler != null) {
-					if (monitorHandler.hasMessages(
+					if (monitorHandler
+							.hasMessages(
 									MessageMonitorLogger.START_MONITOR_EXECUTION_TIMEOUT_MSG,
 									monitorHandler)) {
-						monitorHandler.removeMessages(
+						monitorHandler
+								.removeMessages(
 										MessageMonitorLogger.START_MONITOR_EXECUTION_TIMEOUT_MSG,
 										monitorHandler);
 					}
 					if (!isScreenOn) {
-						Log.d("ScreenOnMonitor", "Now is screen off, send the screen on monitor message");
-						Message msg = monitorHandler.obtainMessage(
+						Log.d("ScreenOnMonitor",
+								"Now is screen off, send the screen on monitor message");
+						Message msg = monitorHandler
+								.obtainMessage(
 										MessageMonitorLogger.START_MONITOR_EXECUTION_TIMEOUT_MSG,
 										monitorHandler);
-						monitorHandler.sendMessageDelayed(msg, SCREEN_ON_MONITOR_TIMEOUT);
+						monitorHandler.sendMessageDelayed(msg,
+								SCREEN_ON_MONITOR_TIMEOUT);
 					}
 				}
 				// / @}
@@ -4570,18 +4584,26 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		// If the key would be handled globally, just return the result, don't
 		// worry about special
 		// key processing.
+		Log.d(TAG, "shouldHandleGlobal:" + mGlobalKeyManager.shouldHandleGlobalKey(keyCode, event));
 		if (mGlobalKeyManager.shouldHandleGlobalKey(keyCode, event)) {
 			return result;
 		}
 
 		// Handle special keys.
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_VOLUME_DOWN:
+		case KeyEvent.KEYCODE_DPAD_DOWN:
+		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_VOLUME_UP:
 		case KeyEvent.KEYCODE_VOLUME_MUTE: {
+			if (isScreenOn && (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || keyCode == KeyEvent.KEYCODE_DPAD_UP)) {
+				//screen off gesture to adjust volume: not available when screen is on
+				break;
+			}
+			
 			if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 				if (down) {
-					if (isScreenOn && !mVolumeDownKeyTriggered && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+					if (isScreenOn && !mVolumeDownKeyTriggered
+							&& (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
 						mVolumeDownKeyTriggered = true;
 						mVolumeDownKeyTime = event.getDownTime();
 						mVolumeDownKeyConsumedByScreenshotChord = false;
@@ -4593,12 +4615,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 					cancelPendingScreenshotChordAction();
 				}
 			} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-				if ((false == ("user".equals(Build.TYPE) || "userdebug".equals(Build.TYPE)))
-						&& SystemProperties.get("persist.sys.anr_sys_key").equals("1")) {
-					mHandler.postDelayed(mKeyRemappingVolumeDownLongPress_Test,	0);
+				if ((false == ("user".equals(Build.TYPE) || "userdebug"
+						.equals(Build.TYPE)))
+						&& SystemProperties.get("persist.sys.anr_sys_key")
+								.equals("1")) {
+					mHandler.postDelayed(mKeyRemappingVolumeDownLongPress_Test,
+							0);
 				}
 				if (down) {
-					if (isScreenOn && !mVolumeUpKeyTriggered && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+					if (isScreenOn && !mVolumeUpKeyTriggered
+							&& (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
 						mVolumeUpKeyTriggered = true;
 						cancelPendingPowerKeyAction();
 						cancelPendingScreenshotChordAction();
@@ -4647,7 +4673,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 							// from DUT when LCD OFF with a call on-going @{
 							IAudioService audioService = getAudioService();
 							if (audioService.isBluetoothScoOn()) {
-								handleVolumeKey(AudioManager.STREAM_BLUETOOTH_SCO, keyCode);
+								handleVolumeKey(
+										AudioManager.STREAM_BLUETOOTH_SCO,
+										keyCode);
 								break;
 							}
 							// / @}
@@ -4655,7 +4683,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 							// If we are in call but we decided not to pass the
 							// key to
 							// the application, handle the volume change here.
-							handleVolumeKey(AudioManager.STREAM_VOICE_CALL, keyCode);
+							handleVolumeKey(AudioManager.STREAM_VOICE_CALL,
+									keyCode);
 							break;
 						}
 					} catch (RemoteException ex) {
@@ -4718,9 +4747,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		case KeyEvent.KEYCODE_POWER: {
 			result &= ~ACTION_PASS_TO_USER;
 			if (down) {
-				mImmersiveModeConfirmation.onPowerKeyDown(isScreenOn, event.getDownTime(),
+				mImmersiveModeConfirmation.onPowerKeyDown(isScreenOn,
+						event.getDownTime(),
 						isImmersiveMode(mLastSystemUiFlags));
-				if (isScreenOn && !mPowerKeyTriggered && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+				if (isScreenOn && !mPowerKeyTriggered
+						&& (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
 					mPowerKeyTriggered = true;
 					mPowerKeyTime = event.getDownTime();
 					interceptScreenshotChord();
@@ -4737,8 +4768,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 							// / M: [ALPS00093981] @{
 						} else if ((isScreenOn || mScreenOffReason == OFF_BECAUSE_OF_PROX_SENSOR)
 								// / @}
-												&& (mIncallPowerBehavior & Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR_HANGUP) != 0
-												&& telephonyService.isOffhook()) {
+								&& (mIncallPowerBehavior & Settings.Secure.INCALL_POWER_BUTTON_BEHAVIOR_HANGUP) != 0
+								&& telephonyService.isOffhook()) {
 							// Otherwise, if "Power button ends call" is
 							// enabled,
 							// the Power button will hang up any current active
@@ -4749,7 +4780,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 						Log.w(TAG, "ITelephony threw RemoteException", ex);
 					}
 				}
-				interceptPowerKeyDown(!isScreenOn || hungUp	|| mVolumeDownKeyTriggered || mVolumeUpKeyTriggered);
+				interceptPowerKeyDown(!isScreenOn || hungUp
+						|| mVolumeDownKeyTriggered || mVolumeUpKeyTriggered);
 			} else {
 				mPowerKeyTriggered = false;
 				cancelPendingScreenshotChordAction();
@@ -4834,6 +4866,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			break;
 		}
 		}
+		
+		if (!isScreenOn && down) {
+			boolean handled = processScreenOffGesture(keyCode);
+			if (handled) {
+				result &= ~ACTION_PASS_TO_USER;
+			}
+		}
+		Log.d(TAG, "result=" + result);
 		return result;
 	}
 
@@ -5881,13 +5921,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		 * if (mKeyguard.showLw(true)) { changes |= FINISH_LAYOUT_REDO_LAYOUT |
 		 * FINISH_LAYOUT_REDO_CONFIG | FINISH_LAYOUT_REDO_WALLPAPER; }
 		 */
-		mKeyguardDelegate.setHidden(false);
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				mKeyguardDelegate.dismiss();
-			}
-		});
+//		mKeyguardDelegate.setHidden(false);
+//		mHandler.post(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					mKeyguardDelegate.dismiss();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}			
+//			}
+//		});
 	}
 
 	// add-e by minesea 2014/8/6 9:39:27 for add lock wake
@@ -6786,4 +6830,97 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		// wj add end
 	}	
 //ccx add
+	
+	/**
+	 * 处理关屏手势
+	 */
+	private boolean processScreenOffGesture(int keyCode) {
+		Log.d(TAG, "processScreenOffGesture: keyCode:" + keyCode);
+		Intent intent = new Intent();
+		boolean handled = true;
+		switch (keyCode) {
+		//手势：^ "^"
+		case KeyEvent.KEYCODE_PAGE_UP:
+			//启动语音助手
+			intent.setAction("com.fjsz.action.MAIN");
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			try {
+				mContext.startActivity(intent);	
+			} catch (ActivityNotFoundException e) {
+				e.printStackTrace();
+			}
+			break;
+			
+		//手势：v "v"
+		case KeyEvent.KEYCODE_PAGE_DOWN:
+			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC");
+			mContext.sendBroadcast(intent);
+			break;
+			
+		//手势：小于号"<"
+		case KeyEvent.KEYCODE_CTRL_LEFT:
+			//Nike+计步器
+			turnScreenOn();
+			intent.setComponent(new ComponentName("com.nike.plusgpschina", "com.nike.plusgps.SplashActivity"));
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			try {
+				mContext.startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+				e.printStackTrace();
+			}
+			break;
+		
+	    //手势：大于号">"
+		case KeyEvent.KEYCODE_CTRL_RIGHT:
+			intent.setAction("com.shizhongkeji.action.GESTURE.HEAR_AID_ENABLE_SWITCH");
+			mContext.sendBroadcast(intent);
+			break;
+	 
+		//手势：画圈
+		case KeyEvent.KEYCODE_O:
+			break;
+		
+		//手势：向左滑动
+		case KeyEvent.KEYCODE_DPAD_LEFT:
+			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_PREVIOUS");
+			mContext.sendBroadcast(intent);
+			break;
+
+		//手势：向右滑动
+		case KeyEvent.KEYCODE_DPAD_RIGHT:
+			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_NEXT");
+			mContext.sendBroadcast(intent);
+			break;
+			
+		//手势：向上滑动
+		case KeyEvent.KEYCODE_DPAD_UP:
+			break;
+		
+		//手势：向下滑动
+		case KeyEvent.KEYCODE_DPAD_DOWN:
+			break;
+
+		//手势：双击
+		case KeyEvent.KEYCODE_X:
+			break;
+			
+		default:
+			handled = false;
+			break;
+		}
+		
+		return handled;
+	}
+	
+	private void turnScreenOn() {
+		//获取电源管理器对象
+		PowerManager pm=(PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+		//获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP 
+        		| PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
+        //点亮屏幕
+        wl.acquire();
+        //释放
+        wl.release();
+	}	
 }
