@@ -16,6 +16,7 @@
 package com.android.internal.policy.impl;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityManagerNative;
@@ -6862,7 +6863,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			//Nike+计步器
 			turnScreenOn();
 			intent.setComponent(new ComponentName("com.nike.plusgpschina", "com.nike.plusgps.SplashActivity"));
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 			try {
 				mContext.startActivity(intent);
 			} catch (ActivityNotFoundException e) {
@@ -6878,6 +6879,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 	 
 		//手势：画圈
 		case KeyEvent.KEYCODE_O:
+			clearBackgroundProcess(mContext);
 			break;
 		
 		//手势：向左滑动
@@ -6922,5 +6924,41 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         wl.acquire();
         //释放
         wl.release();
-	}	
+	}
+	
+	/**
+	 * 清除后台进程
+	 */
+	private static void clearBackgroundProcess(Context context) {
+		getAvailMem(context);
+		
+		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		List<RunningAppProcessInfo> infos = am.getRunningAppProcesses();
+		if (infos != null) {
+			for (RunningAppProcessInfo info : infos) {
+				//importance 该进程的重要程度  分为几个级别，数值越低就越重要
+				Log.d(TAG, "processName:" + info.processName + ", importance:" + info.importance);
+				// 一般数值大于RunningAppProcessInfo.IMPORTANCE_SERVICE的进程都长时间没用或者空进程了 
+				if (info.importance > RunningAppProcessInfo.IMPORTANCE_SERVICE) {
+					String[] pkgList = info.pkgList;
+					for (String pkg : pkgList) {						
+						am.killBackgroundProcesses(pkg);
+					}
+				}    
+			}
+		}
+		
+		getAvailMem(context);
+	}
+	
+	/**
+	 * 获取可用内存大小 
+	 */
+	private static void getAvailMem(Context context) {
+		ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+		MemoryInfo memoryInfo = new MemoryInfo();
+		am.getMemoryInfo(memoryInfo);
+		Log.d(TAG, "availMem:" + memoryInfo.availMem * 1.0 / (1024*1024));
+	}
+	
 }
