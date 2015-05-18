@@ -45,6 +45,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.media.AudioManager;
@@ -52,6 +53,7 @@ import android.media.AudioSystem;
 import android.media.IAudioService;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -123,7 +125,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
 
 import static android.view.WindowManager.LayoutParams.*;
 import static android.view.WindowManagerPolicy.WindowManagerFuncs.LID_ABSENT;
@@ -5618,6 +5622,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 	public void systemReady() {
 		if (!mHeadless) {
 			mKeyguardDelegate = new KeyguardServiceDelegate(mContext, null);
+			enableKeyguard(false);
 			mKeyguardDelegate.onSystemReady();
 		}
 		synchronized (mLock) {
@@ -6833,15 +6838,124 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 //ccx add
 	
 	/**
+	 * 自定义手势-按键事件 映射，可根据事件查找手势Keycode-Gesture map.
+	 */
+	private static final HashMap<Integer, String> KG_MAP = new HashMap<Integer, String>();
+	static {
+		KG_MAP.put(KeyEvent.KEYCODE_DPAD_LEFT, "←");
+		KG_MAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, "→");
+		KG_MAP.put(KeyEvent.KEYCODE_DPAD_DOWN, "↓");
+		KG_MAP.put(KeyEvent.KEYCODE_DPAD_UP, "↑");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_CTRL_LEFT, "<");		
+		KG_MAP.put(KeyEvent.KEYCODE_CTRL_RIGHT, ">");
+		KG_MAP.put(KeyEvent.KEYCODE_PAGE_DOWN, "∨");
+		KG_MAP.put(KeyEvent.KEYCODE_PAGE_UP, "∧");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_X, "双击");
+		KG_MAP.put(KeyEvent.KEYCODE_O, "O");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_2, "2");
+		KG_MAP.put(KeyEvent.KEYCODE_3, "3");
+		KG_MAP.put(KeyEvent.KEYCODE_6, "6");
+		KG_MAP.put(KeyEvent.KEYCODE_7, "7");
+		KG_MAP.put(KeyEvent.KEYCODE_8, "8");
+		KG_MAP.put(KeyEvent.KEYCODE_9, "9");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_A, "a");
+		KG_MAP.put(KeyEvent.KEYCODE_B, "b");
+		KG_MAP.put(KeyEvent.KEYCODE_C, "c");
+		KG_MAP.put(KeyEvent.KEYCODE_D, "d");
+		KG_MAP.put(KeyEvent.KEYCODE_E, "e");
+		KG_MAP.put(KeyEvent.KEYCODE_G, "g");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_H, "h");
+		KG_MAP.put(KeyEvent.KEYCODE_K, "k");
+		KG_MAP.put(KeyEvent.KEYCODE_L, "l");
+		KG_MAP.put(KeyEvent.KEYCODE_M, "m");
+		KG_MAP.put(KeyEvent.KEYCODE_N, "n");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_P, "p");
+		KG_MAP.put(KeyEvent.KEYCODE_Q, "q");
+		KG_MAP.put(KeyEvent.KEYCODE_R, "r");
+		KG_MAP.put(KeyEvent.KEYCODE_S, "s");
+		
+		KG_MAP.put(KeyEvent.KEYCODE_U, "u");
+		KG_MAP.put(KeyEvent.KEYCODE_W, "w");
+		KG_MAP.put(KeyEvent.KEYCODE_Y, "y");
+		KG_MAP.put(KeyEvent.KEYCODE_Z, "z");
+	}
+	public static final String CONTENT_URI = "content://com.szkj.szgestureDBclass.DBHelper_GestureSetting";
+	public static final String FUNCTION_NAME = "function_name";
+	public static final String GESTURE_FUNCTION_PHONENUMBER = "gesture_function_phonenumber";
+	
+	/**
+	 * 获取按键对应的手势
+	 * @param keyCode
+	 * @return
+	 */
+	private String getGestureOfKeyCode(int keyCode) {
+		return KG_MAP.get(Integer.valueOf(keyCode));
+	}
+	
+	/**
+	 * 获取手势对应的功能
+	 * @param gesture
+	 * @return
+	 */
+	private String getFunctionOfGesture(String gesture) {
+		long t1 = System.currentTimeMillis();
+		Cursor c = mContext.getContentResolver().query(Uri.parse(CONTENT_URI), 
+				null, null, new String[] { gesture }, null);
+		long t2 = System.currentTimeMillis();
+		Log.d(TAG, "d=" + (t2 - t1));
+		String functionName = null;
+		if (c != null && c.moveToFirst()) {
+			int ci_function = c.getColumnIndex(FUNCTION_NAME);
+			functionName = c.getString(ci_function);
+		}
+		if (c != null) c.close();
+		return functionName;
+	}
+	
+	/**
+	 * 获取手势对应的电话号码：用于直接拨号
+	 * @param gesture
+	 * @return
+	 */
+	private String getPhoneNumberOfGesture(String gesture) {
+		long t1 = System.currentTimeMillis();
+		Cursor c = mContext.getContentResolver().query(Uri.parse(CONTENT_URI), 
+				null, null, new String[] { gesture }, null);
+		long t2 = System.currentTimeMillis();
+		Log.d(TAG, "d2=" + (t2 - t1));
+		String phoneNumber = null;
+		if (c != null && c.moveToFirst()) {
+			int ci_number = c.getColumnIndex(GESTURE_FUNCTION_PHONENUMBER);
+			phoneNumber = c.getString(ci_number);
+		}
+		if (c != null) c.close();
+		return phoneNumber;
+	}
+	
+	/**
 	 * 处理关屏手势
 	 */
 	private boolean processScreenOffGesture(int keyCode) {
 		Log.d(TAG, "processScreenOffGesture: keyCode:" + keyCode);
 		Intent intent = new Intent();
 		boolean handled = true;
-		switch (keyCode) {
-		//手势：^ "^"
-		case KeyEvent.KEYCODE_PAGE_UP:
+		String gesture = getGestureOfKeyCode(keyCode);
+		if (gesture == null || gesture.length() == 0) {
+			return false;
+		}
+		String functionName = getFunctionOfGesture(gesture);
+		if (functionName == null) {
+			return false;
+		}
+		
+		if (functionName.contains("语音助手")) {
+			vibrate();
 			//启动语音助手
 			intent.setAction("com.fjsz.action.MAIN");
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -6850,67 +6964,77 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			} catch (ActivityNotFoundException e) {
 				e.printStackTrace();
 			}
-			break;
-			
-		//手势：v "v"
-		case KeyEvent.KEYCODE_PAGE_DOWN:
+		} else if (functionName.contains("助听器")) {
+			vibrate();
+			intent.setAction("com.shizhongkeji.action.GESTURE.HEAR_AID_ENABLE_SWITCH");
+			mContext.sendBroadcast(intent);
+		} else if (functionName.contains("音乐")) {
+			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC");
 			mContext.sendBroadcast(intent);
-			break;
-			
-		//手势：小于号"<"
-		case KeyEvent.KEYCODE_CTRL_LEFT:
-			//Nike+计步器
+		} else if (functionName.contains("录音")) {
+			//留给录音应用自己处理震动（根据开始还是结束有不同的震动时长）
+			intent.setAction("com.shizhongkeji.action.GESTURE.REC");
+			mContext.sendBroadcast(intent);
+		} else if (functionName.contains("清除后台程序")) {
+			vibrate();
+			clearBackgroundProcess(mContext);
+		} else if (functionName.contains("上一首")) {
+			vibrate();
+			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_PREVIOUS");
+			mContext.sendBroadcast(intent);
+		} else if (functionName.contains("下一首")) {
+			vibrate();
+			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_NEXT");
+			mContext.sendBroadcast(intent);
+		} else if (functionName.contains("咕咚")) {
+			vibrate();
+			//咕咚运动
 			turnScreenOn();
-			intent.setComponent(new ComponentName("com.nike.plusgpschina", "com.nike.plusgps.SplashActivity"));
+			intent.setComponent(new ComponentName("com.codoon.gps", "com.codoon.gps.ui.WelcomeActivity"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 			try {
 				mContext.startActivity(intent);
 			} catch (ActivityNotFoundException e) {
 				e.printStackTrace();
 			}
-			break;
-		
-	    //手势：大于号">"
-		case KeyEvent.KEYCODE_CTRL_RIGHT:
-			intent.setAction("com.shizhongkeji.action.GESTURE.HEAR_AID_ENABLE_SWITCH");
-			mContext.sendBroadcast(intent);
-			break;
-	 
-		//手势：画圈
-		case KeyEvent.KEYCODE_O:
-			clearBackgroundProcess(mContext);
-			break;
-		
-		//手势：向左滑动
-		case KeyEvent.KEYCODE_DPAD_LEFT:
-			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_PREVIOUS");
-			mContext.sendBroadcast(intent);
-			break;
-
-		//手势：向右滑动
-		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_NEXT");
-			mContext.sendBroadcast(intent);
-			break;
-			
-		//手势：向上滑动
-		case KeyEvent.KEYCODE_DPAD_UP:
-			break;
-		
-		//手势：向下滑动
-		case KeyEvent.KEYCODE_DPAD_DOWN:
-			break;
-
-		//手势：双击
-		case KeyEvent.KEYCODE_X:
-			break;
-			
-		default:
+		} else if (functionName.contains("照相机")) {
+			vibrate();
+			//照相机
+			turnScreenOn();
+			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.camera.CameraLauncher"));
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+			try {
+				mContext.startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+				e.printStackTrace();
+			}
+		} else if (functionName.contains("图库")) {
+			vibrate();
+			//图库
+			turnScreenOn();
+			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.gallery3d.app.GalleryActivity"));
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+			try {
+				mContext.startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+				e.printStackTrace();
+			}
+		} else if (functionName.contains("直接拨号")) {
+			//直接拨号
+			String phoneNumber = getPhoneNumberOfGesture(gesture);
+			if (phoneNumber != null && phoneNumber.length() > 0) {
+				vibrate();
+				Log.d(TAG, "phoneNumber:" + phoneNumber);
+				intent = new Intent(Intent.ACTION_CALL);
+				intent.setData(Uri.parse("tel:" + phoneNumber));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+				mContext.startActivity(intent);				
+			}
+		} else {
 			handled = false;
-			break;
 		}
-		
+
 		return handled;
 	}
 	
@@ -6938,8 +7062,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			for (RunningAppProcessInfo info : infos) {
 				//importance 该进程的重要程度  分为几个级别，数值越低就越重要
 				Log.d(TAG, "processName:" + info.processName + ", importance:" + info.importance);
-				// 一般数值大于RunningAppProcessInfo.IMPORTANCE_SERVICE的进程都长时间没用或者空进程了 
-				if (info.importance > RunningAppProcessInfo.IMPORTANCE_SERVICE) {
+				//要杀的进程等级 >= RunningAppProcessInfo.IMPORTANCE_SERVICE
+				if (info.importance >= RunningAppProcessInfo.IMPORTANCE_SERVICE) {
 					String[] pkgList = info.pkgList;
 					for (String pkg : pkgList) {						
 						am.killBackgroundProcesses(pkg);
@@ -6961,4 +7085,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		Log.d(TAG, "availMem:" + memoryInfo.availMem * 1.0 / (1024*1024));
 	}
 	
+	/**
+	 * 震动500ms
+	 */
+	private void vibrate() {
+		Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+		boolean hasVibrator = vibrator.hasVibrator();
+		if (hasVibrator) {
+			vibrator.vibrate(500);
+		}
+	}
 }
