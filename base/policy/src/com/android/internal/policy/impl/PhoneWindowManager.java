@@ -6957,26 +6957,29 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		if (functionName.contains("语音助手")) {
 			vibrate();
 			//启动语音助手
-			intent.setAction("com.fjsz.action.MAIN");
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			try {
-				mContext.startActivity(intent);	
-			} catch (ActivityNotFoundException e) {
-				e.printStackTrace();
-			}
+			startVoiceAssist();
 		} else if (functionName.contains("助听器")) {
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.HEAR_AID_ENABLE_SWITCH");
 			mContext.sendBroadcast(intent);
 		} else if (functionName.contains("音乐")) {
+			//停止语音助手
+			stopVoiceAssist();
+
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC");
 			mContext.sendBroadcast(intent);
 		} else if (functionName.contains("录音")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			//留给录音应用自己处理震动（根据开始还是结束有不同的震动时长）
 			intent.setAction("com.shizhongkeji.action.GESTURE.REC");
 			mContext.sendBroadcast(intent);
 		} else if (functionName.contains("清除后台程序")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			vibrate();
 			clearBackgroundProcess(mContext);
 		} else if (functionName.contains("上一首")) {
@@ -6988,6 +6991,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_NEXT");
 			mContext.sendBroadcast(intent);
 		} else if (functionName.contains("咕咚")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			vibrate();
 			//咕咚运动
 			turnScreenOn();
@@ -6999,6 +7005,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				e.printStackTrace();
 			}
 		} else if (functionName.contains("照相机")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			vibrate();
 			//照相机
 			turnScreenOn();
@@ -7010,6 +7019,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				e.printStackTrace();
 			}
 		} else if (functionName.contains("图库")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			vibrate();
 			//图库
 			turnScreenOn();
@@ -7021,6 +7033,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				e.printStackTrace();
 			}
 		} else if (functionName.contains("直接拨号")) {
+			//停止语音助手
+			stopVoiceAssist();
+			
 			//直接拨号
 			String phoneNumber = getPhoneNumberOfGesture(gesture);
 			if (phoneNumber != null && phoneNumber.length() > 0) {
@@ -7094,5 +7109,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		if (hasVibrator) {
 			vibrator.vibrate(500);
 		}
+	}
+	
+	/**
+	 * 启动语音助手
+	 */
+	private void startVoiceAssist() {
+		Intent intent = new Intent("com.shizhongkeji.action.GESTURE.START_VOICE_ASSIST");
+		mContext.sendBroadcast(intent);
+	}
+	
+	/**
+	 * 停止语音助手
+	 */
+	private void stopVoiceAssist() {
+		Intent intent = new Intent("com.shizhongkeji.action.GESTURE.STOP_VOICE_ASSIST");
+		mContext.sendBroadcast(intent);
 	}
 }
