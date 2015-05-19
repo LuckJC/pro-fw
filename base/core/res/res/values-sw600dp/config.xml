@@ -39,6 +39,8 @@
 
     <!-- Use a larger scaling span for larger screen devices. -->
     <dimen name="config_minScalingSpan">32mm</dimen>
+	
+	<bool name="config_showNavigationBar">true</bool>
 
 </resources>
 
