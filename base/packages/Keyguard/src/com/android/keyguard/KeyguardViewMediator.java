@@ -660,6 +660,21 @@ public class KeyguardViewMediator {
         synchronized (this) {
             if (DEBUG) Log.d(TAG, "onSystemReady");
             mSystemReady = true;
+            
+            //add by lihj begin to clear keyguard lock when in small lcm display, such like watch
+            DisplayMetrics outMetrics = new DisplayMetrics();
+    		((WindowManager)mContext.getSystemService(
+                    Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(outMetrics);
+    		if (outMetrics.widthPixels == 320 && outMetrics.heightPixels == 320) {
+    			mIsSmallLcm = true;
+    			mLockPatternUtils.clearLock(false);
+            	mLockPatternUtils.setLockScreenDisabled(true);
+    		} else {
+    			mIsSmallLcm = false;
+    		}
+            Log.d(TAG, "onSystemReady mIsSmallLcm=" + mIsSmallLcm);
+            //add by lihj end
+            
             mUpdateMonitor.registerCallback(mUpdateCallback);
             mLockPatternUtils.resetLockoutAttemptDeadline();
 
@@ -1021,29 +1036,21 @@ public class KeyguardViewMediator {
     }
 
 	/**
-	 * If it is in the "watch" mode(means using the small display of watch).
-	 * @return
+	 * If it is in the "watch" display(means using the small display of watch).
 	 */
-	private boolean isInWatchMode() {
-		DisplayMetrics outMetrics = new DisplayMetrics();
-		((WindowManager)mContext.getSystemService(
-                Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(outMetrics);
-		Log.d(TAG, "isInWatchMode(): outMetrics:" + outMetrics);
-		if (outMetrics.widthPixels == 320 && outMetrics.heightPixels == 320) {
-			return true;
-		}
-		return false;
-	}
+    private boolean mIsSmallLcm;
 	
     /**
      * Enable the keyguard if the settings are appropriate.
      */
     private void doKeyguardLocked(Bundle options) {
-        if (isInWatchMode()) {
-    		//if in "watch" mode, don't show keyguard lock screen 
-    		return;
-    	}
-		
+    	if (mIsSmallLcm) {
+    		//if in "watch" mode, don't show keyguard lock screen
+        	mLockPatternUtils.clearLock(false);
+        	mLockPatternUtils.setLockScreenDisabled(true);
+        	return;
+        }
+    	
 		boolean isSimSecure = mUpdateMonitor.isSimPinSecure();
         ///M: if another app is disabling us (except Sim Secure), then don't show
         if ((!mExternallyEnabled && !isSimSecure)|| PowerOffAlarmManager.isAlarmBoot()) {
