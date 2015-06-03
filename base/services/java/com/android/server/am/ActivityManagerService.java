@@ -365,6 +365,12 @@ public final class ActivityManagerService extends ActivityManagerNative
     // default actuion automatically.  Important for devices without direct input
     // devices.
     private boolean mShowDialogs = true;
+    
+    
+    /**
+     * If it is in the "watch" mode, small lcm(means using the small display of watch).
+     */
+    private boolean mIsSmallLcm = false;
 
     /**
      * Description of a request to start a new activity, which has been held
@@ -3113,10 +3119,10 @@ public final class ActivityManagerService extends ActivityManagerNative
         intent.setComponent(mTopComponent);
         PackageManager pm = mContext.getPackageManager();
         if (mFactoryTest != SystemServer.FACTORY_TEST_LOW_LEVEL) {
-            if (isInWatchMode()) {
+            if (mIsSmallLcm) {
         		//launch the "watch" home activity
             	//enable watch launcher
-            	pm.setApplicationEnabledSetting("com.infocomiot.watch.launcher", 
+            	pm.setApplicationEnabledSetting("com.szkj.watch.launcher", 
             			PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, 0);
             	//disable android(default) launcher
             	pm.setApplicationEnabledSetting("com.android.launcher3", 
@@ -3125,7 +3131,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         	} else {
         		//launch the "android standard" home activity
         		//disable watch launcher
-        		pm.setApplicationEnabledSetting("com.infocomiot.watch.launcher", 
+        		pm.setApplicationEnabledSetting("com.szkj.watch.launcher", 
         				PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
         		//enable android(default) launcher
             	pm.setApplicationEnabledSetting("com.android.launcher3", 
@@ -3135,21 +3141,6 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
         return intent;
     }
-	
-	/**
-	 * If it is in the "watch" mode(means using the small display of watch).
-	 * @return
-	 */
-	private boolean isInWatchMode() {
-		DisplayMetrics outMetrics = new DisplayMetrics();
-		((WindowManager)mContext.getSystemService(
-                Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(outMetrics);
-		Log.d(TAG, "isInWatchMode(): outMetrics:" + outMetrics);
-		if (outMetrics.widthPixels == 320 && outMetrics.heightPixels == 320) {
-			return true;
-		}
-		return false;
-	}
 
     boolean startHomeActivityLocked(int userId) {
         if (mHeadless) {
@@ -9963,6 +9954,18 @@ public final class ActivityManagerService extends ActivityManagerNative
     }
     
     public void systemReady(final Runnable goingCallback) {
+    	/// SZKJ begin
+    	DisplayMetrics outMetrics = new DisplayMetrics();
+		((WindowManager)mContext.getSystemService(
+                Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(outMetrics);
+		Log.d(TAG, "systemReady: outMetrics:" + outMetrics);
+		if (outMetrics.widthPixels == 320 && outMetrics.heightPixels == 320) {
+			mIsSmallLcm = true;
+		} else {
+			mIsSmallLcm = false;
+		}
+		/// SZKJ end
+		
         /// M: Power off alarm feature @{
         if (mAmPlus == null) {
             mAmPlus = new ActivityManagerPlus(mContext, mSelf);
