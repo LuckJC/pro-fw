@@ -4249,10 +4249,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		}
 		
 		//add by lhj for gesture up and down to change volume
-		if (keycode == KeyEvent.KEYCODE_DPAD_UP) {
-			keycode = KeyEvent.KEYCODE_VOLUME_UP;
-		} else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
-			keycode = KeyEvent.KEYCODE_VOLUME_DOWN;
+		if (keycode == KeyEvent.KEYCODE_DPAD_UP || keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
+			vibrate();
+			if (keycode == KeyEvent.KEYCODE_DPAD_UP) {
+				keycode = KeyEvent.KEYCODE_VOLUME_UP;
+			} else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
+				keycode = KeyEvent.KEYCODE_VOLUME_DOWN;
+			}
 		}
 		//add by lhj end
 		
@@ -6961,21 +6964,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		} else if (functionName.contains("助听器")) {
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.HEAR_AID_ENABLE_SWITCH");
-			mContext.sendBroadcast(intent);
+			mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 		} else if (functionName.contains("音乐")) {
 			//停止语音助手
 			stopVoiceAssist();
 
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC");
-			mContext.sendBroadcast(intent);
+			mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 		} else if (functionName.contains("录音")) {
 			//停止语音助手
 			stopVoiceAssist();
 			
 			//留给录音应用自己处理震动（根据开始还是结束有不同的震动时长）
 			intent.setAction("com.shizhongkeji.action.GESTURE.REC");
-			mContext.sendBroadcast(intent);
+			mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 		} else if (functionName.contains("清除后台程序")) {
 			//停止语音助手
 			stopVoiceAssist();
@@ -6985,11 +6988,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		} else if (functionName.contains("上一首")) {
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_PREVIOUS");
-			mContext.sendBroadcast(intent);
+			mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 		} else if (functionName.contains("下一首")) {
 			vibrate();
 			intent.setAction("com.shizhongkeji.action.GESTURE.PLAY_MUSIC_NEXT");
-			mContext.sendBroadcast(intent);
+			mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 		} else if (functionName.contains("咕咚")) {
 			//停止语音助手
 			stopVoiceAssist();
@@ -6999,11 +7002,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			turnScreenOn();
 			intent.setComponent(new ComponentName("com.codoon.gps", "com.codoon.gps.ui.WelcomeActivity"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-			try {
-				mContext.startActivity(intent);
-			} catch (ActivityNotFoundException e) {
-				e.printStackTrace();
-			}
+			startActivity(intent);
 		} else if (functionName.contains("照相机")) {
 			//停止语音助手
 			stopVoiceAssist();
@@ -7013,11 +7012,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			turnScreenOn();
 			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.camera.CameraLauncher"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-			try {
-				mContext.startActivity(intent);
-			} catch (ActivityNotFoundException e) {
-				e.printStackTrace();
-			}
+			startActivity(intent);
 		} else if (functionName.contains("图库")) {
 			//停止语音助手
 			stopVoiceAssist();
@@ -7027,11 +7022,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			turnScreenOn();
 			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.gallery3d.app.GalleryActivity"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-			try {
-				mContext.startActivity(intent);
-			} catch (ActivityNotFoundException e) {
-				e.printStackTrace();
-			}
+			startActivity(intent);
 		} else if (functionName.contains("直接拨号")) {
 			//停止语音助手
 			stopVoiceAssist();
@@ -7044,7 +7035,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				intent = new Intent(Intent.ACTION_CALL);
 				intent.setData(Uri.parse("tel:" + phoneNumber));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-				mContext.startActivity(intent);				
+				startActivity(intent);			
 			}
 		} else {
 			handled = false;
@@ -7116,7 +7107,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 	 */
 	private void startVoiceAssist() {
 		Intent intent = new Intent("com.shizhongkeji.action.GESTURE.START_VOICE_ASSIST");
-		mContext.sendBroadcast(intent);
+		mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
 	}
 	
 	/**
@@ -7124,6 +7115,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 	 */
 	private void stopVoiceAssist() {
 		Intent intent = new Intent("com.shizhongkeji.action.GESTURE.STOP_VOICE_ASSIST");
-		mContext.sendBroadcast(intent);
+		mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT_OR_SELF);
+	}
+	
+	private void startActivity(Intent intent) {
+		try {
+			mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+		} catch (ActivityNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 }
