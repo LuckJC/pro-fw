@@ -7010,7 +7010,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			vibrate();
 			//照相机
 			turnScreenOn();
-			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.camera.CameraLauncher"));
+			intent.setComponent(new ComponentName("com.szkj.watchcamera", "com.szkj.watchcamera.MainActivity"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 			startActivity(intent);
 		} else if (functionName.contains("图库")) {
@@ -7020,7 +7020,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			vibrate();
 			//图库
 			turnScreenOn();
-			intent.setComponent(new ComponentName("com.android.gallery3d", "com.android.gallery3d.app.GalleryActivity"));
+			intent.setComponent(new ComponentName("com.android.watchgallery", "com.android.watchgallery.MainActivity"));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 			startActivity(intent);
 		} else if (functionName.contains("直接拨号")) {
