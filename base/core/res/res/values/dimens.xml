@@ -18,32 +18,45 @@
 */
 -->
 <resources>
+
     <!-- The width that is used when creating thumbnails of applications. -->
     <dimen name="thumbnail_width">164dp</dimen>
     <!-- The height that is used when creating thumbnails of applications. -->
     <dimen name="thumbnail_height">145dp</dimen>
-    <!-- The standard size (both width and height) of an application icon that
-         will be displayed in the app launcher and elsewhere. -->
+    <!--
+         The standard size (both width and height) of an application icon that
+         will be displayed in the app launcher and elsewhere.
+    -->
     <dimen name="app_icon_size">48dip</dimen>
-    <!-- The maximum number of action buttons that should be permitted within
+    <!--
+         The maximum number of action buttons that should be permitted within
          an action bar/action mode. This will be used to determine how many
-         showAsAction="ifRoom" items can fit. "always" items can override this. -->
+         showAsAction="ifRoom" items can fit. "always" items can override this.
+    -->
     <integer name="max_action_buttons">2</integer>
+
     <dimen name="toast_y_offset">64dip</dimen>
-    <!-- Height of the status bar -->
-    <dimen name="status_bar_height">25dip</dimen>
+    <!-- Height of the status bar 25dp-->
+
+    <!-- ####Height of the status bar has increased 5dp#### -->
+    <dimen name="status_bar_height">30dip</dimen>
     <!-- Height of the bottom navigation / system bar. -->
     <dimen name="navigation_bar_height">48dp</dimen>
     <!-- Height of the bottom navigation bar in portrait; often the same as @dimen/navigation_bar_height -->
     <dimen name="navigation_bar_height_landscape">48dp</dimen>
     <!-- Width of the navigation bar when it is placed vertically on the screen -->
     <dimen name="navigation_bar_width">42dp</dimen>
-    <!-- Height of notification icons in the status bar -->
-    <dimen name="status_bar_icon_size">24dip</dimen>
+    <!-- Height of notification icons in the status bar 24dp-->
+    
+    <!-- ####Height of notification icons in the status bar has increased 4dp####-->
+    <dimen name="status_bar_icon_size">28dip</dimen>
+    
     <!-- Size of the giant number (unread count) in the notifications -->
     <dimen name="status_bar_content_number_size">48sp</dimen>
-    <!-- Height of the system bar (combined status & navigation); used by
-         SystemUI internally, not respected by the window manager. -->
+    <!--
+         Height of the system bar (combined status & navigation); used by
+         SystemUI internally, not respected by the window manager.
+    -->
     <dimen name="system_bar_height">@dimen/navigation_bar_height</dimen>
     <!-- Height of notification icons in the system bar -->
     <dimen name="system_bar_icon_size">32dip</dimen>
@@ -91,7 +104,7 @@
 
     <!-- Preference activity side margins -->
     <dimen name="preference_screen_side_margin">0dp</dimen>
-    <!-- Preference activity side margins negative-->
+    <!-- Preference activity side margins negative -->
     <dimen name="preference_screen_side_margin_negative">0dp</dimen>
     <!-- Preference activity top margin -->
     <dimen name="preference_screen_top_margin">0dp</dimen>
@@ -111,32 +124,44 @@
     <dimen name="preference_breadcrumb_paddingLeft">0dp</dimen>
     <!-- Padding to the right of the preference panel breadcrumb -->
     <dimen name="preference_breadcrumb_paddingRight">0dp</dimen>
-    <!-- Minimum space to allocate to the left of a preference item for an icon.
+    <!--
+         Minimum space to allocate to the left of a preference item for an icon.
         This helps in aligning titles when some items have icons and some don't. When space is
-        at a premium, we don't pre-allocate any space. -->
+        at a premium, we don't pre-allocate any space.
+    -->
     <dimen name="preference_icon_minWidth">0dp</dimen>
-    <!-- The platform's desired minimum size for a dialog's width when it
+    <!--
+         The platform's desired minimum size for a dialog's width when it
          is along the major axis (that is the screen is landscape).  This may
-         be either a fraction or a dimension. -->
-    <item type="dimen" name="dialog_min_width_major">65%</item>
+         be either a fraction or a dimension.
+    -->
+    <item name="dialog_min_width_major" type="dimen">65%</item>
 
-    <!-- The platform's desired fixed width for a dialog along the major axis
-         (the screen is in landscape). This may be either a fraction or a dimension.-->
-    <item type="dimen" name="dialog_fixed_width_major">320dp</item>
-    <!-- The platform's desired fixed width for a dialog along the minor axis
-         (the screen is in portrait). This may be either a fraction or a dimension.-->
-    <item type="dimen" name="dialog_fixed_width_minor">320dp</item>
-    <!-- The platform's desired fixed height for a dialog along the major axis
-         (the screen is in portrait). This may be either a fraction or a dimension.-->
-    <item type="dimen" name="dialog_fixed_height_major">80%</item>
-    <!-- The platform's desired fixed height for a dialog along the minor axis
-         (the screen is in landscape). This may be either a fraction or a dimension.-->
-    <item type="dimen" name="dialog_fixed_height_minor">100%</item>
+    <!--
+         The platform's desired fixed width for a dialog along the major axis
+         (the screen is in landscape). This may be either a fraction or a dimension.
+    -->
+    <item name="dialog_fixed_width_major" type="dimen">320dp</item>
+    <!--
+         The platform's desired fixed width for a dialog along the minor axis
+         (the screen is in portrait). This may be either a fraction or a dimension.
+    -->
+    <item name="dialog_fixed_width_minor" type="dimen">320dp</item>
+    <!--
+         The platform's desired fixed height for a dialog along the major axis
+         (the screen is in portrait). This may be either a fraction or a dimension.
+    -->
+    <item name="dialog_fixed_height_major" type="dimen">80%</item>
+    <!--
+         The platform's desired fixed height for a dialog along the minor axis
+         (the screen is in landscape). This may be either a fraction or a dimension.
+    -->
+    <item name="dialog_fixed_height_minor" type="dimen">100%</item>
 
     <!-- Preference activity, vertical padding for the header list -->
     <dimen name="preference_screen_header_vertical_padding">0dp</dimen>
-
     <dimen name="preference_screen_header_padding_side">16dip</dimen>
+
     <integer name="preference_screen_header_scrollbarStyle">0x02000000</integer> <!-- outsideOverlay -->
 
     <integer name="preference_fragment_scrollbarStyle">0x02000000</integer> <!-- outsideOverlay -->
@@ -145,10 +170,12 @@
     <dimen name="preference_item_padding_inner">8dip</dimen>
     <dimen name="preference_child_padding_side">16dip</dimen>
 
-    <!-- The platform's desired minimum size for a dialog's width when it
+    <!--
+         The platform's desired minimum size for a dialog's width when it
          is along the minor axis (that is the screen is portrait).  This may
-         be either a fraction or a dimension. -->
-    <item type="dimen" name="dialog_min_width_minor">95%</item>
+         be either a fraction or a dimension.
+    -->
+    <item name="dialog_min_width_minor" type="dimen">95%</item>
 
     <!-- The width of the big icons in notifications. -->
     <dimen name="notification_large_icon_width">64dp</dimen>
@@ -233,16 +260,20 @@
     <!-- Maximum height for a stacked tab bar as part of an action bar -->
     <dimen name="action_bar_stacked_max_height">48dp</dimen>
 
-    <!-- Maximum width for a stacked action bar tab. This prevents
+    <!--
+         Maximum width for a stacked action bar tab. This prevents
          action bar tabs from becoming too wide on a wide screen when only
-         a few are present. -->
+         a few are present.
+    -->
     <dimen name="action_bar_stacked_tab_max_width">180dp</dimen>
 
-    <!-- Size of notification text (see TextAppearance.StatusBar.EventContent) -->
+    <!-- Size of notification text (see TextAppearance.StatusBar.EventContent) 14dp-->
     <dimen name="notification_text_size">14dp</dimen>
-    <!-- Size of notification text titles (see TextAppearance.StatusBar.EventContent.Title) -->
+    
+    <!-- Size of notification text titles (see TextAppearance.StatusBar.EventContent.Title) 18dp-->
     <dimen name="notification_title_text_size">18dp</dimen>
-    <!-- Size of smaller notification text (see TextAppearance.StatusBar.EventContent.Line2, Info, Time) -->
+    
+    <!-- Size of smaller notification text (see TextAppearance.StatusBar.EventContent.Line2, Info, Time) 12dp-->
     <dimen name="notification_subtext_size">12dp</dimen>
 
     <!-- Keyguard dimensions -->
@@ -261,10 +292,10 @@
     <!-- Size of the clock font in keyguard's status view -->
     <dimen name="kg_status_clock_font_size">75dp</dimen>
 
-    <!-- Size of the date font in keyguard's status view  -->
+    <!-- Size of the date font in keyguard's status view -->
     <dimen name="kg_status_date_font_size">15dp</dimen>
 
-    <!-- Size of the generic status lines keyguard's status view  -->
+    <!-- Size of the generic status lines keyguard's status view -->
     <dimen name="kg_status_line_font_size">13dp</dimen>
 
     <!-- Size of margin on the right of keyguard's status view -->
@@ -300,8 +331,10 @@
     <!-- Bottom padding for the widget pager -->
     <dimen name="kg_widget_pager_bottom_padding">64dp</dimen>
 
-    <!-- Top margin for the runway lights. We add a negative margin in large
-        devices to account for the widget pager padding -->
+    <!--
+         Top margin for the runway lights. We add a negative margin in large
+        devices to account for the widget pager padding
+    -->
     <dimen name="kg_runway_lights_top_margin">0dp</dimen>
 
     <!-- Touch slop for the global toggle accessibility gesture -->
@@ -331,17 +364,23 @@
     <!-- Size of the text under the avator on the multiuser lockscreen. -->
     <dimen name="keyguard_avatar_name_size">10sp</dimen>
 
-    <!-- Size of the region along the edge of the screen that will accept
-         swipes to scroll the widget area. -->
+    <!--
+         Size of the region along the edge of the screen that will accept
+         swipes to scroll the widget area.
+    -->
     <dimen name="kg_edge_swipe_region_size">24dp</dimen>
 
-    <!-- If the height if keyguard drops below this threshold (most likely
-    due to the appearance of the IME), then drop the multiuser selector. -->
+    <!--
+    If the height if keyguard drops below this threshold (most likely
+    due to the appearance of the IME), then drop the multiuser selector.
+    -->
     <dimen name="kg_squashed_layout_threshold">600dp</dimen>
 
-    <!-- The height of widgets which do not support vertical resizing. This is only
+    <!--
+    The height of widgets which do not support vertical resizing. This is only
     used on tablets; on phones, this size is determined by the space left by the
-    security mode. -->
+    security mode.
+    -->
     <dimen name="kg_small_widget_height">160dp</dimen>
 
     <!-- Rounded corner radius for video subtitles. -->
@@ -358,4 +397,5 @@
 
     <!-- width of ImmersiveModeConfirmation (-1 for match_parent) -->
     <dimen name="immersive_mode_cling_width">-1px</dimen>
+
 </resources>
