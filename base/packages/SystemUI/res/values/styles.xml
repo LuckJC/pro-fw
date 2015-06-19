@@ -53,8 +53,9 @@
     </style>
 
     <style name="TextAppearance.StatusBar.Clock" parent="@*android:style/TextAppearance.StatusBar.Icon">
-        <!-- Note: must be dp to fit in status bar -->
-        <item name="android:textSize">16dp</item>
+        <!-- Note: must be dp to fit in status bar 16dp-->
+        <!-- ####Note: must be dp to fit in status bar has increased 4dp####-->
+        <item name="android:textSize">20dp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">@color/status_bar_clock_color</item>
     </style>
@@ -162,8 +163,9 @@
 
     <style name="TextAppearance.StatusBar.PhoneTicker"
         parent="@*android:style/TextAppearance.StatusBar.Ticker">
-        <!-- Note: must be dp to fit in status bar -->
-        <item name="android:textSize">14dp</item>
+        <!-- Note: must be dp to fit in status bar 14dp-->
+        <!-- Note: must be dp to fit in status bar has increased 4dp-->
+        <item name="android:textSize">18dp</item>
     </style>
 
     <!-- M: [SystemUI] Support Application Guide @{ -->
