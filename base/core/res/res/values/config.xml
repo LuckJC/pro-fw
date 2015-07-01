@@ -890,7 +890,7 @@
          of their choosing.
          This can be overridden for devices where a different default SMS
          application is desired. -->
-    <string name="default_sms_application" translatable="false">com.android.mms</string>
+    <string name="default_sms_application" translatable="false">com.example.xuntongwatch</string>
 
     <!-- Enable/disable default bluetooth profiles:
         HSP_AG, ObexObjectPush, Audio, NAP -->

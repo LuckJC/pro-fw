@@ -41,6 +41,8 @@
     <dimen name="config_minScalingSpan">32mm</dimen>
 	
 	<bool name="config_showNavigationBar">true</bool>
+	
+	<string name="default_sms_application" translatable="false">com.android.mms</string>
 
 </resources>
 
